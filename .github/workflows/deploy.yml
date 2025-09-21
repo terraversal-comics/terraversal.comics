@@ -1,0 +1,41 @@
+name: Deploy Notion to GitHub Pages
+
+on:
+  push:
+    branches: ["main"] # Runs when you push changes to the main branch
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  notion_to_site:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Use Notion & Hugo to build site
+        # This is the all-in-one GitHub Action that handles the data fetching and site building
+        uses: actions/starter-workflow-notion-hugo@v1 
+        with:
+          # This connects to the NOTION_SECRET you saved in GitHub settings
+          notion_token: ${{ secrets.NOTION_SECRET }}
+          # 🚨 You MUST replace the text inside the quotes below 🚨
+          notion_database_url: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1?source=copy_link"
+
+      - name: 📦 Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: ⬆️ Upload site files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # The Hugo builder puts the finished HTML/CSS into this folder
+          path: './public' 
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
