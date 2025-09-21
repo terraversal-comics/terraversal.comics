@@ -11,31 +11,55 @@ permissions:
   id-token: write
 
 jobs:
-  notion_to_site:
+  # The first job fetches the data and builds the static site
+  build:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code 
+      - name: ⬇️ Checkout code
         uses: actions/checkout@v4
-
-      - name: ⚙️ Use Notion & Hugo to build site
-        # This is the all-in-one GitHub Action that handles the data fetching and site building
-        uses: hugo-notion-blog/notion-to-hugo@v1.0.0
         with:
-          # This connects to the NOTION_SECRET you saved in GitHub settings
-          notion_token: ${{ secrets.NOTION_SECRET }}
-          # 🚨 You MUST replace the text inside the quotes below 🚨
-          notion_database_url: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1?source=copy_link"
+          # This gives the checkout step permission to work with the content
+          fetch-depth: 0 
+      
+      # 1. FETCH NOTION DATA (The secure part)
+      - name: 📝 Convert Notion to Markdown
+        uses: gabriella439/notion-to-markdown@v1 # A stable, proven action!
+        with:
+          # The ID/URL of your main Notion Database or Page
+          notion-id: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1?source=copy_link" # 🚨 Don't forget your URL! 🚨
+          notion-token: ${{ secrets.NOTION_SECRET }}
+          # Where to save the content, Hugo looks in a folder called 'content'
+          output-dir: content/posts
 
+      # 2. BUILD STATIC SITE (The SSG part)
+      - name: ⚙️ Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+
+      - name: 🏗️ Build the Website
+        run: hugo --baseURL ${{ steps.pages.outputs.base_url }}
+
+      # 3. UPLOAD AND DEPLOY
       - name: 📦 Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
-        
-      - name: ⬆️ Upload site files
+
+      - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # The Hugo builder puts the finished HTML/CSS into this folder
-          path: './public' 
+          # Hugo builds the final HTML/CSS into the 'public' folder
+          path: './public'
 
+  # The second job officially deploys the site using the uploaded files
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
