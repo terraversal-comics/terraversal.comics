@@ -21,12 +21,22 @@ jobs:
           fetch-depth: 0 
       
       # 1. FETCH NOTION DATA (The Final, Stable Exporter)
-      - name: 📝 Convert Notion to Markdown
-        # This is the most current, stable, and widely-used action that supports only the token.
-        uses: pmsip9/notion-action@v5.1.0 
+      # 1. SETUP NODE.JS
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          token: ${{ secrets.NOTION_SECRET }}
-          # The exporter will download the files into the root folder.
+          node-version: '20'
+
+      # 2. RUN CUSTOM SCRIPT (Instead of the broken Action)
+      - name: 📝 Run Notion Fetch Script
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_SECRET }}
+          # We're passing the token as an environment variable (env)
+        run: |
+          npm install 
+          npm start
+          
+      # The rest of the build steps...
           
       # 2. BUILD STATIC SITE (Hugo)
       - name: ⚙️ Setup Hugo
