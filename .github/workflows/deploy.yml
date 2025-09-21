@@ -2,16 +2,15 @@ name: Deploy Notion to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Runs when you push changes to the main branch
-  workflow_dispatch: # Allows you to run it manually from the Actions tab
+    branches: ["main"] 
+  workflow_dispatch: 
 
 permissions:
-  contents: read
+  contents: write  # Changed from read to write for the Notion Action
   pages: write
   id-token: write
 
 jobs:
-  # The first job fetches the data and builds the static site
   build:
     runs-on: ubuntu-latest
     
@@ -21,28 +20,25 @@ jobs:
         with:
           fetch-depth: 0 
       
-      # 1. FETCH NOTION DATA (The final, most reliable exporter)
+      # 1. FETCH NOTION DATA (The Final, Stable Exporter)
       - name: 📝 Convert Notion to Markdown
-        uses: notion-exporter/action@v1.4 # This is the better-behaved tool
+        # This is the most current, stable, and widely-used action that supports only the token.
+        uses: pmsip9/notion-action@v5.1.0 
         with:
           token: ${{ secrets.NOTION_SECRET }}
-          # This tells the exporter to put the files where Hugo expects them
-          target: posts
+          # The exporter will download the files into the root folder.
           
-      # The rest of the build steps...
-
-      # 2. BUILD STATIC SITE (The SSG part)
-      # NOTE: This assumes the data is fetched to the default location, which Hugo can read.
+      # 2. BUILD STATIC SITE (Hugo)
       - name: ⚙️ Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
 
       - name: 🏗️ Build the Website
-        # The hugo command is slightly different now to look in the current folder
-        run: hugo --baseURL ${{ steps.pages.outputs.base_url }} --contentDir ./
+        # This command tells Hugo to build the site using the content dumped into the root folder.
+        run: hugo --baseURL ${{ steps.pages.outputs.base_url }} --contentDir ./ 
 
-      # 3. UPLOAD AND DEPLOY
+      # 3. UPLOAD
       - name: 📦 Setup Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -50,9 +46,9 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # Hugo outputs the final HTML/CSS to the 'public' folder.
           path: './public'
 
-  # The second job officially deploys the site using the uploaded files
   deploy:
     environment:
       name: github-pages
