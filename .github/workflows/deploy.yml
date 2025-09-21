@@ -20,7 +20,7 @@ jobs:
 
       - name: ⚙️ Use Notion & Hugo to build site
         # This is the all-in-one GitHub Action that handles the data fetching and site building
-        uses: actions/starter-workflow-notion-hugo@v1 
+        uses: hugo-notion-blog/notion-to-hugo@v1.0.0
         with:
           # This connects to the NOTION_SECRET you saved in GitHub settings
           notion_token: ${{ secrets.NOTION_SECRET }}
