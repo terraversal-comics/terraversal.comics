@@ -27,7 +27,7 @@ jobs:
         uses: gabriella439/notion-to-markdown@v1 # A stable, proven action!
         with:
           # The ID/URL of your main Notion Database or Page
-          notion-id: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1?source=copy_link" # 🚨 Don't forget your URL! 🚨
+          notion-id: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1" # 🚨 Don't forget your URL! 🚨
           notion-token: ${{ secrets.NOTION_SECRET }}
           # Where to save the content, Hugo looks in a folder called 'content'
           output-dir: content/posts
