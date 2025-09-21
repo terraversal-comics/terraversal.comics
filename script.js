@@ -4,7 +4,7 @@ const fs = require('fs');
 
 // 🚨 1. PASTE YOUR DATABASE ID HERE 🚨
 // Get this ID from your Notion Database URL (it's the long string before the '?').
-const databaseId = "PASTE_YOUR_DATABASE_ID_HERE"; 
+const databaseId = "27458bf5c3a480e796b4ca0f2c209df1"; 
 
 // 2. Set up Notion Clients
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
