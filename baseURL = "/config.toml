@@ -1,0 +1,4 @@
+baseURL = "/"
+languageCode = "en-us"
+title = "My Notion Powered Site"
+theme = "ananke" # This is a simple, built-in theme
