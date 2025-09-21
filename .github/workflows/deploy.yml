@@ -19,27 +19,25 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
-          # This gives the checkout step permission to work with the content
           fetch-depth: 0 
       
-      # 1. FETCH NOTION DATA (The secure part)
+      # 1. FETCH NOTION DATA (The secure part - now with the ONLY required input)
       - name: 📝 Convert Notion to Markdown
-        uses: gabriella439/notion-to-markdown@main # Using the main branch for stability
+        uses: gabriella439/notion-to-markdown@main
         with:
-          # The ID/URL of your main Notion Database or Page
-          notion-id: "https://www.notion.so/terraversal-comics/Terraversal-Comics-27458bf5c3a480e796b4ca0f2c209df1" # 🚨 Don't forget your URL! 🚨
+          # 🚨 THIS IS THE ONLY LINE IT WANTS! 🚨
           notion-token: ${{ secrets.NOTION_SECRET }}
-          # Where to save the content, Hugo looks in a folder called 'content'
-          output-dir: content/posts
 
       # 2. BUILD STATIC SITE (The SSG part)
+      # NOTE: This assumes the data is fetched to the default location, which Hugo can read.
       - name: ⚙️ Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
 
       - name: 🏗️ Build the Website
-        run: hugo --baseURL ${{ steps.pages.outputs.base_url }}
+        # The hugo command is slightly different now to look in the current folder
+        run: hugo --baseURL ${{ steps.pages.outputs.base_url }} --contentDir ./
 
       # 3. UPLOAD AND DEPLOY
       - name: 📦 Setup Pages
@@ -49,7 +47,6 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Hugo builds the final HTML/CSS into the 'public' folder
           path: './public'
 
   # The second job officially deploys the site using the uploaded files
