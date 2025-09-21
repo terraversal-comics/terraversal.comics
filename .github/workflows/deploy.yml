@@ -21,12 +21,15 @@ jobs:
         with:
           fetch-depth: 0 
       
-      # 1. FETCH NOTION DATA (The secure part - now with the ONLY required input)
+      # 1. FETCH NOTION DATA (The final, most reliable exporter)
       - name: 📝 Convert Notion to Markdown
-        uses: gabriella439/notion-to-markdown@main
+        uses: notion-exporter/action@v1.4 # This is the better-behaved tool
         with:
-          # 🚨 THIS IS THE ONLY LINE IT WANTS! 🚨
-          notion-token: ${{ secrets.NOTION_SECRET }}
+          token: ${{ secrets.NOTION_SECRET }}
+          # This tells the exporter to put the files where Hugo expects them
+          target: posts
+          
+      # The rest of the build steps...
 
       # 2. BUILD STATIC SITE (The SSG part)
       # NOTE: This assumes the data is fetched to the default location, which Hugo can read.
