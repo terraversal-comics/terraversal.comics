@@ -8,7 +8,7 @@ const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 
 // 2. Set up Notion Clients
 const notion = new Client({ auth: process.env.NOTION_SECRET }); 
-// 💥 FIX: Initialize N2M with skipFrontMatter: true to prevent it from ever outputting YAML
+// Initialize N2M with skipFrontMatter: true
 const n2m = new NotionToMarkdown({ 
     notionClient: notion,
     skipFrontMatter: true
@@ -16,10 +16,6 @@ const n2m = new NotionToMarkdown({
 
 // Helper function for creating clean filenames (slugs)
 function createSlug(title) {
-    // 1. Remove non-alphanumeric/non-space/non-hyphen characters
-    // 2. Trim leading/trailing whitespace
-    // 3. Replace all spaces and consecutive hyphens with a single hyphen
-    // 4. Convert to lowercase
     return title
         .replace(/[^\w\s-]/g, "")
         .trim()
@@ -45,7 +41,7 @@ async function getNotionPages() {
             process.exit(1);
         }
 
-        // 4. Create and clear content directory (Hugo needs a fresh 'content' folder)
+        // 4. Create and clear content directory
         const contentDir = "./content";
         if (!fs.existsSync(contentDir)) {
             fs.mkdirSync(contentDir);
@@ -60,7 +56,6 @@ async function getNotionPages() {
 
         // 5. Loop through each child page and convert it
         for (const page of childPages) {
-            // The title is stored in the 'child_page' property when listing children.
             const pageTitle = page.child_page.title || "untitled-page"; 
             
             console.log(`Converting "${pageTitle}"...`);
@@ -69,42 +64,28 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX 1: Manually construct the final Markdown file with required Front Matter.
-            // The template string MUST NOT have a newline after the final '---'
+            // 🚨 FIX: Manually construct the final Markdown file with required Front Matter.
+            // Ensure the final backtick is immediately after the final '---'
             const frontMatter = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
----`; // 👈 NO NEWLINE HERE!
+---`;
 
-            let finalMarkdown = frontMatter;
-
-            // 🛑 SAFETY CHECK: Only append content if it exists
+            // 🟢 ULTIMATE CLEANUP - Strip any leading newlines/whitespace from the content
             if (contentString) {
-                // Aggressively strip all leading/trailing whitespace/newlines from content string
-                contentString = contentString.trim();
-
-                // 🟢 ULTIMATE CLEANUP - STEP 1: Remove residual newlines/spaces at the start
-                contentString = contentString.replace(/^[\r\n]+/, '');
-
-                // If old messy YAML was still there, this will strip it out:
-                if (contentString.startsWith("```")) {
-                    contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
-                }
-                
-                // Remove leading Markdown headers/separators just in case, though the N2M setting should fix it.
-                contentString = contentString.replace(/^(#+\s*)+/, '').trim(); 
-                contentString = contentString.replace(/^(---|\*\*\*|___)/, '').trim(); 
-                
-                // 🟢 FIX 3: Add a single newline to ensure separation. Since N2M is now skipping front matter, 
-                // this simple separation should work perfectly.
-                finalMarkdown += `\n\n${contentString}`; 
+                // Aggressively remove leading whitespace/newlines/BOMs
+                contentString = contentString.replace(/^[\s\r\n\uFEFF]+/, '');
             } else {
-                console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
+                contentString = ''; // Ensure it's not null/undefined
             }
 
-            // Save the Markdown to a new file in the content directory, forcing clean UTF-8 encoding
-            // 🟢 FIX 2: Using the new, cleaner slug function to prevent double hyphens
+            // Combine the front matter and the cleaned content.
+            // The single '\n\n' guarantees a blank line between the final '---' 
+            // and the content, which is what Hugo needs to separate them.
+            const finalMarkdown = `${frontMatter}\n\n${contentString}`;
+            
+            // Save the Markdown to a new file in the content directory
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
