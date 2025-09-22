@@ -53,10 +53,10 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
-            // This structure is guaranteed to be read by Hugo as metadata.
+            // We use the new, unique date to bust the cache.
             const frontMatter = `---
 title: "${pageTitle}"
-date: 2025-09-22T13:13:00-05:00
+date: 2025-09-22T13:19:00-05:00 
 draft: false
 ---
 `; 
@@ -67,6 +67,10 @@ draft: false
             if (contentString) {
                 // Aggressively strip all leading/trailing whitespace/newlines from content string
                 contentString = contentString.trim();
+
+                // 🟢 THE ULTIMATE FIX 🟢: Remove any residual newlines/spaces at the start
+                // This stops the XML from showing the Front Matter as page content (h2, hr tags).
+                contentString = contentString.replace(/^[\r\n]+/, '');
 
                 // If old messy YAML was still there, this will strip it out:
                 if (contentString.startsWith("```")) {
