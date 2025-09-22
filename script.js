@@ -65,7 +65,7 @@ draft: false
 
             // 🛑 SAFETY CHECK: Only append content if it exists
             if (contentString) {
-                // Strip leading/trailing whitespace/newlines from content string for safety
+                // Aggressively strip all leading/trailing whitespace/newlines from content string
                 contentString = contentString.trim();
 
                 // If old messy YAML was still there, this will strip it out:
@@ -73,7 +73,7 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // 🟢 THE FIX IS HERE: Add a double newline (\n\n) to create the mandatory blank line.
+                // Add two newlines to separate the content from the Front Matter perfectly
                 finalMarkdown += `\n\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
