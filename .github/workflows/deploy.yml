@@ -33,8 +33,6 @@ jobs:
         env:
           NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
-      # 🚫 THE BAD COPY STEP HAS BEEN REMOVED 🚫
-
       # 2. BUILD STATIC SITE WITH HUGO
       - name: ⚙️ Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -43,9 +41,8 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # This is the simplest, most explicit command. It WILL find the config.toml
-        # now that you've correctly named and placed it in the root!
-        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+        # This explicit command is needed to find the config.toml file in the root.
+        run: hugo -s . --config config.toml --baseURL "[https://terraversal-comics.github.io/terraversal.comics/](https://terraversal-comics.github.io/terraversal.comics/)"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
