@@ -52,9 +52,8 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let mdString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX: Remove markdown code fences if the page starts with front matter
-            // This is needed so Hugo can read the YAML metadata you put in Notion.
-            if (mdString.startsWith("```")) {
+            // 🚨 FIX: Remove markdown code fences IF mdString EXISTS and starts with front matter
+            if (mdString && mdString.startsWith("```")) {
                 mdString = mdString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
             }
 
