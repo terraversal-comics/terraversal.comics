@@ -52,7 +52,9 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let mdString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX: Remove markdown code fences IF mdString EXISTS and starts with front matter
+            // 🚨 CRITICAL FIX: Ensure mdString exists before running startsWith()
+            // This prevents crashing on completely empty pages.
+            // Also, removes markdown code fences if the page starts with front matter.
             if (mdString && mdString.startsWith("```")) {
                 mdString = mdString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
             }
