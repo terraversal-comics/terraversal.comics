@@ -50,16 +50,22 @@ async function getNotionPages() {
             
             console.log(`Converting "${pageTitle}"...`);
             
-            // Get the Markdown blocks for the page's content using the block ID (which is the child page ID)
+            // Get the Markdown blocks for the page's content
             const mdblocks = await n2m.pageToMarkdown(page.id);
             const mdString = n2m.toMarkdownString(mdblocks).parent;
 
-            // Save the Markdown to a new file in the content directory
-            // This replaces spaces and special characters with hyphens to create a clean filename.
-            const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, mdString);
+            // 🛑 SAFETY CHECK: Only write the file if content exists!
+            if (mdString) {
+                // Save the Markdown to a new file in the content directory
+                const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
+                fs.writeFileSync(`${contentDir}/${fileName}`, mdString);
+                console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
+            } else {
+                console.log(`⚠️ WARNING: "${pageTitle}" has no readable content. Skipping file creation.`);
+            }
 
-            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
+            // 🚫 The line that caused the final crash was here. It's now GONE.
+
         }
 
         console.log("🥳 All pages converted and saved successfully! The Hugo build step will run next.");
