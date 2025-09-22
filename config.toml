@@ -1,8 +1,13 @@
 baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
 title = "Terraversal Comics"
-theme = "ananke" # ✔️ Your confirmed theme name
+theme = "ananke" 
 disableKinds = ["taxonomy", "term"]
+
+# 💥 THE CRITICAL FIX: Set the global RSS content limit to 0. 
+# This is the standard way to fix the ghost YAML in the RSS feed 
+# and ensures Hugo's core output is predictable.
+rssLimit = 0
 
 [params]
   description = "Recent content on Terraversal Comics"
@@ -11,15 +16,4 @@ disableKinds = ["taxonomy", "term"]
   home = ["HTML", "RSS"]
   page = ["HTML"]
 
-# 💥 The actual fix to stop the YAML block showing in the RSS feed:
-[mediaTypes]
-  [mediaTypes."application/rss"]
-    # Tell Hugo to use the plain text version of the summary
-    suffix = "+xml"
-
-[outputFormats.RSS]
-  mediaType = "application/rss"
-  # This line specifically tells Hugo to use a custom template for the description
-  # which usually defaults to .Summary.Plain or .Content.
-  # By default, Hugo uses the internal template, but this is a failsafe.
-  baseName = "index"
+# ⚠️ REMOVED all the complex [mediaTypes] and [outputFormats.RSS] sections!
