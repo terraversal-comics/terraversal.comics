@@ -102,8 +102,8 @@ draft: false
         console.error("Double-check your Notion secret and parent page ID.");
         process.exit(1);
     }
-}
+} // <--- 🌟 THIS IS THE MISSING CLOSING BRACE 🌟
+
 // ⚠️ THE FINAL LINES ARE THE MOST IMPORTANT!
 // This is the function call that runs your code.
 getNotionPages();
-```eof
