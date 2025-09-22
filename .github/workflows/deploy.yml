@@ -42,7 +42,7 @@ jobs:
           
       - name: 🏗️ Build the Website
         # 🚨 FINAL FIX: Cleaned up URL (removed brackets/parentheses) 🚨
-        run: hugo -s . --config config.toml --baseURL "[https://terraversal-comics.github.io/terraversal.comics/](https://terraversal-comics.github.io/terraversal.comics/)"
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
