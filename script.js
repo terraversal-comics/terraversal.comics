@@ -4,11 +4,9 @@ const fs = require('fs');
 
 // 🚨🚨 1. PASTE YOUR PARENT PAGE ID HERE 🚨🚨
 // This ID is for the main 'Terraversal Comics' page that contains all your blog posts.
-// This ID: 27458bf5c3a480e796b4ca0f2c209df1 is a PAGE ID, which is correct for this API call!
 const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1"; 
 
 // 2. Set up Notion Clients
-// It uses the NOTION_SECRET environment variable from your GitHub workflow.
 const notion = new Client({ auth: process.env.NOTION_SECRET }); 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
@@ -52,7 +50,13 @@ async function getNotionPages() {
             
             // Get the Markdown blocks for the page's content
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            const mdString = n2m.toMarkdownString(mdblocks).parent;
+            let mdString = n2m.toMarkdownString(mdblocks).parent;
+
+            // 🚨 FIX: Remove markdown code fences if the page starts with front matter
+            // This is needed so Hugo can read the YAML metadata you put in Notion.
+            if (mdString.startsWith("```")) {
+                mdString = mdString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
+            }
 
             // 🛑 SAFETY CHECK: Only write the file if content exists!
             if (mdString) {
@@ -63,16 +67,13 @@ async function getNotionPages() {
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no readable content. Skipping file creation.`);
             }
-
-            // 🚫 The line that caused the final crash was here. It's now GONE.
-
         }
 
         console.log("🥳 All pages converted and saved successfully! The Hugo build step will run next.");
 
     } catch (error) {
         console.error("❌ An error occurred during the conversion process:", error);
-        console.error("Double-check your Notion secret and parent page ID. Also check if your integration has permission to VIEW the parent page.");
+        console.error("Double-check your Notion secret and parent page ID.");
         process.exit(1);
     }
 }
