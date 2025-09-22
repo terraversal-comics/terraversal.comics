@@ -86,8 +86,10 @@ draft: false
             const finalMarkdown = `${frontMatter}\n\n${contentString}`;
             
             // Save the Markdown to a new file in the content directory
+            // 🚨🚨 FINAL FINAL FIX: Trim the entire string to remove any invisible leading characters
+            const cleanedMarkdown = finalMarkdown.trim();
             const fileName = `${createSlug(pageTitle)}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
+            fs.writeFileSync(`${contentDir}/${fileName}`, cleanedMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
