@@ -1,5 +1,5 @@
-baseURL = "/"
+baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
 title = "My Notion Powered Site"
-theme = "ananke" # This is a simple, built-in theme
-sectionPagesMenu = "main" # Tells Hugo to use the 'posts' section
+theme = "ananke"
+sectionPagesMenu = "main"
