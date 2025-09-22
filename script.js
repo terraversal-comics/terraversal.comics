@@ -10,6 +10,19 @@ const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 const notion = new Client({ auth: process.env.NOTION_SECRET }); 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
+// Helper function for creating clean filenames (slugs)
+function createSlug(title) {
+    // 1. Remove non-alphanumeric/non-space/non-hyphen characters
+    // 2. Trim leading/trailing whitespace
+    // 3. Replace all spaces and consecutive hyphens with a single hyphen
+    // 4. Convert to lowercase
+    return title
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .replace(/[-\s]+/g, "-")
+        .toLowerCase();
+}
+
 // 3. Define the main function that fetches and converts pages
 async function getNotionPages() {
     try {
@@ -52,11 +65,11 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
-            // We use the new, unique date (13:28:00) to bust the cache.
+            // 🚨 FIX 1: Manually construct the final Markdown file with required Front Matter
+            // We use the **current timestamp** for dynamic cache busting and proper post chronology.
             const frontMatter = `---
 title: "${pageTitle}"
-date: 2025-09-22T13:28:00-05:00 
+date: ${new Date().toISOString()}
 draft: false
 ---
 `; 
@@ -83,8 +96,8 @@ draft: false
             }
 
             // Save the Markdown to a new file in the content directory, forcing clean UTF-8 encoding
-            // 🟢 THE CRITICAL FIX FOR YAML CRASH (line 2) 🟢
-            const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
+            // 🟢 FIX 2: Using the new, cleaner slug function to prevent double hyphens
+            const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
