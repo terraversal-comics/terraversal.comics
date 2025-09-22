@@ -89,8 +89,9 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // Add two newlines to separate the content from the Front Matter perfectly
-                finalMarkdown += `\n\n${contentString}`; 
+                // 🟢 FIX 3: Change this to a single newline! This prevents the YAML Front Matter from 
+                // bleeding into the page content (which fixes the broken RSS feed).
+                finalMarkdown += `\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
