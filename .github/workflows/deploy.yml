@@ -42,7 +42,7 @@ jobs:
           
       - name: 🏗️ Build the Website
         # This explicit command is guaranteed to work with your clean config.toml
-        run: hugo -s . --config config.toml --baseURL "[https://terraversal-comics.github.io/terraversal.comics/](https://terraversal-comics.github.io/terraversal.comics/)"
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
