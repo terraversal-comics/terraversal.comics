@@ -33,6 +33,11 @@ jobs:
         env:
           NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
+      # 🚨 NEW STEP ADDED HERE TO FORCE CONFIG LOCATION 🚨
+      - name: 📁 Verify & Copy Config
+        # This forces the config file to be in the current directory before Hugo runs
+        run: cp config.toml .
+
       # 2. BUILD STATIC SITE WITH HUGO
       - name: ⚙️ Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -41,7 +46,7 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # 🚨 FINAL FIX APPLIED HERE: Direct Config Path 🚨
+        # Using the most explicit command we know: -s . and --config config.toml
         run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
