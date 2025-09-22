@@ -26,11 +26,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🧹 Normalize Script Line Endings
-        run: |
-          # Use sed to remove Carriage Return (\r) characters from the script file.
-          # This fixes SyntaxError: Unexpected end of input on Linux runners.
-          sed -i 's/\r$//' script.js
+      - name: 💾 Install dos2unix
+        run: sudo apt-get update && sudo apt-get install -y dos2unix
+
+      - name: 🧹 Fix Line Endings on script.js
+        run: dos2unix script.js
 
       - name: 📝 Install Dependencies and Fetch Notion Data
         run: |
@@ -59,7 +59,7 @@ jobs:
         with:
           path: './public'
 
-  deploy: # ⬅️ FIXED INDENTATION: Aligned with 'build:'
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
