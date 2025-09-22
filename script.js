@@ -3,61 +3,55 @@ const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
 // 🚨 1. PASTE YOUR DATABASE ID HERE 🚨
-// Get this ID from your Notion Database URL (it's the long string before the '?').
+// This is the long string before the '?' in your database URL.
 const databaseId = "27458bf5c3a480e796b4ca0f2c209df1"; 
 
 // 2. Set up Notion Clients
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const notion = new Client({ auth: process.env.NOTION_SECRET }); // Make sure it's process.env.NOTION_SECRET
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
-// 3. Create the content directory if it doesn't exist
-const contentDir = "content/posts";
-if (!fs.existsSync(contentDir)) {
-    fs.mkdirSync(contentDir, { recursive: true });
-}
+// 3. This is our debug script.
+async function getNotionDebugData() {
+    console.log("🔥 Starting DEBUG script...");
+    console.log("🔥 Checking Notion token...");
 
-// 4. Main function to fetch, convert, and save pages
-async function getNotionData() {
-    console.log("Starting Notion data export...");
-
-    // Query the database for all pages
-    const response = await notion.databases.query({
-        database_id: databaseId,
-        filter: {
-            property: "Status", // Assuming you have a Status property
-            select: {
-                equals: "Published", // Only fetch pages marked 'Published'
-            },
-        },
-    });
-
-    for (const page of response.results) {
-        // Extract page title using the standard page title property (much safer!)
-        const pageTitle = page.properties.title.title[0]?.plain_text || "untitled-page";
-        const fileName = pageTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    try {
+        // This is a simple query to test if the token is valid.
+        const tokenTest = await notion.users.list({});
+        console.log("✅ Token is working! It returned user data.");
+        console.log("🔥 Now querying database...");
         
-        // Convert blocks to Markdown
-        const mdblocks = await n2m.pageToMarkdown(page.id);
-        const mdString = n2m.toMarkdownString(mdblocks);
+        // This query fetches the first few pages of your database
+        const response = await notion.databases.query({
+            database_id: databaseId,
+            page_size: 5, // We don't need all of them, just enough to debug
+        });
 
-        // --- Create Hugo Front Matter (Metadata) ---
-        const frontMatter = 
-`---
-title: "${pageTitle.replace(/"/g, '\\"')}"
-date: "${page.created_time}"
-draft: false
----
+        if (response.results.length === 0) {
+            console.log("❌ No pages found in this database. Double-check your database ID.");
+        } else {
+            console.log("✅ Database query succeeded. Printing the properties of the first page:");
+            
+            // Print out the properties of the very first page it finds
+            const firstPage = response.results[0];
+            const propertyKeys = Object.keys(firstPage.properties);
+            console.log("🔥 Found these properties (columns) in your database:");
+            console.log(propertyKeys);
+            console.log("🔥 Full JSON of the first page's properties:");
+            console.log(JSON.stringify(firstPage.properties, null, 2));
 
-`;
-        
-        // Save the file
-        fs.writeFileSync(`${contentDir}/${fileName}.md`, frontMatter + mdString.parent);
-        console.log(`✅ Exported: ${fileName}.md`);
+            console.log("✅ DEBUG SCRIPT COMPLETE. Look for the property names above and tell me what they are.");
+            // We force a crash here because this script is for debugging only.
+            // A successful run would have an exit code of 0, but since we need to wait
+            // for your input, we force it to fail.
+            process.exit(1);
+        }
+
+    } catch (error) {
+        console.error("❌ A Notion API error occurred! This most likely means your secret token is wrong or the database ID is incorrect.");
+        console.error("❌ The specific error is:", error);
+        process.exit(1);
     }
-    console.log("Notion export complete!");
 }
 
-getNotionData().catch(err => {
-    console.error("Notion Export Failed:", err);
-    process.exit(1); // Force the Action to fail if the script fails
-});
+getNotionDebugData();
