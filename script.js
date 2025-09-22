@@ -53,25 +53,28 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
-            // This structure is guaranteed to be read by Hugo as metadata.
+            // We are using a single newline after the closing --- (this is the fix!)
             const frontMatter = `---
 title: "${pageTitle}"
 date: 2025-09-22T12:00:00-05:00
 draft: false
 ---
-
 `; 
 
             let finalMarkdown = frontMatter;
 
             // 🛑 SAFETY CHECK: Only append content if it exists
             if (contentString) {
+                // Strip leading/trailing whitespace/newlines from content string for safety
+                contentString = contentString.trim();
+
                 // If old messy YAML was still there, this will strip it out:
                 if (contentString.startsWith("```")) {
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                finalMarkdown += contentString;
+                // Add a newline to properly separate Front Matter from content
+                finalMarkdown += `\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
@@ -86,9 +89,4 @@ draft: false
 
     } catch (error) {
         console.error("❌ An error occurred during the conversion process:", error);
-        console.error("Double-check your Notion secret and parent page ID.");
-        process.exit(1);
-    }
-}
-
-getNotionPages();
+        console.error("Double-
