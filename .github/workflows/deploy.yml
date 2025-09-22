@@ -2,11 +2,11 @@ name: Notion to GitHub Pages
 
 on:
   push:
-    branches: ["main"] 
-  workflow_dispatch: 
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: write 
+  contents: write
   pages: write
   id-token: write
 
@@ -27,8 +27,7 @@ jobs:
           node-version: '20' # Use a stable, recent Node version
           
       - name: 📝 Install Dependencies and Fetch Notion Data
-        # Assuming your package.json has 'npm install' and 'npm start' is the fetch script.
-        # This step is critical: your script MUST write content to a location like 'content/'
+        # This step runs your script.js, which is now fixed to fetch pages.
         run: |
           npm install 
           npm start
@@ -45,9 +44,9 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # This is the standard Hugo build. It will look for content in your 'content/' 
-        # folder (where your script dumped the Notion files) and output to 'public/'.
-        run: hugo --baseURL ${{ steps.pages.outputs.base_url }}
+        # 🚨🚨 FIX APPLIED HERE 🚨🚨
+        # We hardcode the baseURL since the dynamic variable wasn't available yet.
+        run: hugo --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
