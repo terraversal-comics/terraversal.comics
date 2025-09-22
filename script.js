@@ -64,8 +64,8 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX: Manually construct the final Markdown file with required Front Matter.
-            // Ensure the final backtick is immediately after the final '---'
+            // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter.
+            // The final backtick must be IMMEDIATELY after the final '---' with NO newline inside the template string.
             const frontMatter = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
