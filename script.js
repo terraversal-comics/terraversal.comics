@@ -65,14 +65,13 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX 1: Manually construct the final Markdown file with required Front Matter
-            // We use the **current timestamp** for dynamic cache busting and proper post chronology.
+            // 🚨 FIX 1: Manually construct the final Markdown file with required Front Matter.
+            // The template string MUST NOT have a newline after the final '---'
             const frontMatter = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
----
-`; 
+---`; // 👈 NO NEWLINE HERE!
 
             let finalMarkdown = frontMatter;
 
@@ -81,7 +80,7 @@ draft: false
                 // Aggressively strip all leading/trailing whitespace/newlines from content string
                 contentString = contentString.trim();
 
-                // 🟢 THE ULTIMATE CLEANUP: Remove any residual newlines/spaces at the start
+                // 🟢 ULTIMATE CLEANUP - STEP 1: Remove residual newlines/spaces at the start
                 contentString = contentString.replace(/^[\r\n]+/, '');
 
                 // If old messy YAML was still there, this will strip it out:
@@ -89,9 +88,14 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // 🟢 FIX 3: Change this to a single newline! This prevents the YAML Front Matter from 
-                // bleeding into the page content (which fixes the broken RSS feed).
-                finalMarkdown += `\n${contentString}`; 
+                // 💥 NEW FIX: Remove any leading Markdown/HTML separators that N2M might be adding
+                // This specifically targets the `<hr>` and other unexpected elements showing up in the RSS feed
+                contentString = contentString.replace(/^(#+\s*)+/, '').trim(); // Remove leading Markdown headers (e.g. #, ##)
+                contentString = contentString.replace(/^(---|\*\*\*|___)/, '').trim(); // Remove leading HR/separator in MD
+                
+                // 🟢 FIX 3: Explicitly add TWO newlines (\n\n) after the '---'. 
+                // This is the strict requirement for Hugo to correctly parse content after Front Matter.
+                finalMarkdown += `\n\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
