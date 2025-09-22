@@ -73,8 +73,8 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // Add a newline to properly separate Front Matter from content
-                finalMarkdown += `\n${contentString}`; 
+                // 🟢 THE FIX IS HERE: Add a double newline (\n\n) to create the mandatory blank line.
+                finalMarkdown += `\n\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
