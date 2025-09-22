@@ -56,7 +56,7 @@ async function getNotionPages() {
             // This structure is guaranteed to be read by Hugo as metadata.
             const frontMatter = `---
 title: "${pageTitle}"
-date: 2025-09-22T12:00:00-05:00
+date: 2025-09-22T13:13:00-05:00
 draft: false
 ---
 `; 
