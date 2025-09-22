@@ -103,6 +103,7 @@ draft: false
         process.exit(1);
     }
 }
-
+// ⚠️ THE FINAL LINES ARE THE MOST IMPORTANT!
+// This is the function call that runs your code.
 getNotionPages();
 ```eof
