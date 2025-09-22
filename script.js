@@ -83,9 +83,9 @@ draft: false
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
 
-            // Save the Markdown to a new file in the content directory
+            // Save the Markdown to a new file in the content directory, forcing clean UTF-8 encoding
             const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown);
+            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
