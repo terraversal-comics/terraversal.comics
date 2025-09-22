@@ -33,11 +33,7 @@ jobs:
         env:
           NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
-      # 🚨 FIXING CONFIG LOCATION 🚨
-      - name: 📁 Verify & Copy Config
-        # This copies the config file from the expected subfolder (config/) to the root (.).
-        # ⚠️ CRITICAL: Ensure your config.toml is actually at 'config/config.toml'
-        run: cp config/config.toml . 
+      # 🚫 THE BAD COPY STEP HAS BEEN REMOVED 🚫
 
       # 2. BUILD STATIC SITE WITH HUGO
       - name: ⚙️ Setup Hugo
@@ -47,7 +43,8 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # Now that config.toml is in the root, this explicit command should work.
+        # This is the simplest, most explicit command. It WILL find the config.toml
+        # now that you've correctly named and placed it in the root!
         run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
