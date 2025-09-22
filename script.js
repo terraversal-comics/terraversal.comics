@@ -8,7 +8,11 @@ const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 
 // 2. Set up Notion Clients
 const notion = new Client({ auth: process.env.NOTION_SECRET }); 
-const n2m = new NotionToMarkdown({ notionClient: notion });
+// 💥 FIX: Initialize N2M with skipFrontMatter: true to prevent it from ever outputting YAML
+const n2m = new NotionToMarkdown({ 
+    notionClient: notion,
+    skipFrontMatter: true
+});
 
 // Helper function for creating clean filenames (slugs)
 function createSlug(title) {
@@ -88,13 +92,12 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // 💥 NEW FIX: Remove any leading Markdown/HTML separators that N2M might be adding
-                // This specifically targets the `<hr>` and other unexpected elements showing up in the RSS feed
-                contentString = contentString.replace(/^(#+\s*)+/, '').trim(); // Remove leading Markdown headers (e.g. #, ##)
-                contentString = contentString.replace(/^(---|\*\*\*|___)/, '').trim(); // Remove leading HR/separator in MD
+                // Remove leading Markdown headers/separators just in case, though the N2M setting should fix it.
+                contentString = contentString.replace(/^(#+\s*)+/, '').trim(); 
+                contentString = contentString.replace(/^(---|\*\*\*|___)/, '').trim(); 
                 
-                // 🟢 FIX 3: Explicitly add TWO newlines (\n\n) after the '---'. 
-                // This is the strict requirement for Hugo to correctly parse content after Front Matter.
+                // 🟢 FIX 3: Add a single newline to ensure separation. Since N2M is now skipping front matter, 
+                // this simple separation should work perfectly.
                 finalMarkdown += `\n\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
