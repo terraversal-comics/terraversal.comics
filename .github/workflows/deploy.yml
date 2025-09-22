@@ -46,7 +46,7 @@ jobs:
         # 🚨 FINAL FIX APPLIED HERE 🚨
         # -s . : Tells Hugo to start looking for config/content from the current directory.
         # --baseURL: Provides the necessary URL argument.
-        run: hugo -s . --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
