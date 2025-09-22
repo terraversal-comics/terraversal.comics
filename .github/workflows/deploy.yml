@@ -1,4 +1,4 @@
-name: Deploy Notion to GitHub Pages
+name: Notion to GitHub Pages
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch: 
 
 permissions:
-  contents: write  # Changed from read to write for the Notion Action
+  contents: write 
   pages: write
   id-token: write
 
@@ -15,40 +15,41 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: ⬇️ Checkout code
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
-      
-      # 1. FETCH NOTION DATA (The Final, Stable Exporter)
-      # 1. SETUP NODE.JS
+          fetch-depth: 0 # Get all history for accurate deployment
+
+      # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      # 2. RUN CUSTOM SCRIPT (Instead of the broken Action)
-      - name: 📝 Run Notion Fetch Script
-        env:
-          NOTION_TOKEN: ${{ secrets.NOTION_SECRET }}
-          # We're passing the token as an environment variable (env)
+          node-version: '20' # Use a stable, recent Node version
+          
+      - name: 📝 Install Dependencies and Fetch Notion Data
+        # Assuming your package.json has 'npm install' and 'npm start' is the fetch script.
+        # This step is critical: your script MUST write content to a location like 'content/'
         run: |
           npm install 
           npm start
-          
-      # The rest of the build steps...
-          
-      # 2. BUILD STATIC SITE (Hugo)
+        env:
+          # This passes your token to the Node script for authentication
+          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
+
+      # 2. BUILD STATIC SITE WITH HUGO
       - name: ⚙️ Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
-
+          # Set the theme, assuming 'anake' is in the themes folder
+          extended: true
+          
       - name: 🏗️ Build the Website
-        # This command tells Hugo to build the site using the content dumped into the root folder.
-        run: hugo --baseURL ${{ steps.pages.outputs.base_url }} --contentDir ./ 
+        # This is the standard Hugo build. It will look for content in your 'content/' 
+        # folder (where your script dumped the Notion files) and output to 'public/'.
+        run: hugo --baseURL ${{ steps.pages.outputs.base_url }}
 
-      # 3. UPLOAD
+      # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -56,8 +57,8 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Hugo outputs the final HTML/CSS to the 'public' folder.
-          path: './public'
+          # The output from Hugo goes to the 'public' folder
+          path: './public' 
 
   deploy:
     environment:
