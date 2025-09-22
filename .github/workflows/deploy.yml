@@ -40,13 +40,13 @@ jobs:
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
-          # Set the theme, assuming 'anake' is in the themes folder
           extended: true
           
       - name: 🏗️ Build the Website
-        # 🚨🚨 FIX APPLIED HERE 🚨🚨
-        # We hardcode the baseURL since the dynamic variable wasn't available yet.
-        run: hugo --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+        # 🚨 FINAL FIX APPLIED HERE 🚨
+        # -s . : Tells Hugo to start looking for config/content from the current directory.
+        # --baseURL: Provides the necessary URL argument.
+        run: hugo -s . --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
