@@ -74,8 +74,8 @@ draft: false
 
             // 🟢 ULTIMATE CLEANUP - Strip any leading newlines/whitespace from the content
             if (contentString) {
-                // Aggressively remove leading whitespace/newlines/BOMs
-                contentString = contentString.replace(/^[\s\r\n\uFEFF]+/, '');
+                // Aggressively remove leading whitespace/newlines/BOMs from content
+                contentString = contentString.replace(/^[\s\r\n\uFEFF\u00A0]+/, '');
             } else {
                 contentString = ''; // Ensure it's not null/undefined
             }
@@ -86,10 +86,12 @@ draft: false
             const finalMarkdown = `${frontMatter}\n\n${contentString}`;
             
             // Save the Markdown to a new file in the content directory
-            // 🚨🚨 FINAL FINAL FIX: Trim the entire string to remove any invisible leading characters
-            const cleanedMarkdown = finalMarkdown.trim();
+            // ☢️ NUCLEAR CLEANUP: Aggressively remove ALL leading junk from the FINAL string 
+            // to force the file to start with the three hyphens.
+            const nuclearCleanedMarkdown = finalMarkdown.replace(/^[\s\r\n\uFEFF\u00A0]+/, '');
+            
             const fileName = `${createSlug(pageTitle)}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, cleanedMarkdown, { encoding: 'utf8' });
+            fs.writeFileSync(`${contentDir}/${fileName}`, nuclearCleanedMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
@@ -103,3 +105,4 @@ draft: false
 }
 
 getNotionPages();
+```eof
