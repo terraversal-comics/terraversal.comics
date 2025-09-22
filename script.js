@@ -65,13 +65,15 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 FIX 1: Manually construct the final Markdown file with required Front Matter.
-            // The template string MUST NOT have a newline after the final '---'
+            // 🚨 FIX 4: Add a 'summary' field to the Front Matter. 
+            // This forces Hugo to use a clean string for the RSS description, preventing the 
+            // YAML Front Matter (and the messy N2M output) from leaking into the RSS feed.
             const frontMatter = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
----`; // 👈 NO NEWLINE HERE!
+summary: "This is a post about ${pageTitle}. Read more on the site!" 
+---`; // NO NEWLINE HERE!
 
             let finalMarkdown = frontMatter;
 
@@ -88,13 +90,11 @@ draft: false
                     contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
                 }
                 
-                // 💥 NEW FIX: Remove any leading Markdown/HTML separators that N2M might be adding
-                // This specifically targets the `<hr>` and other unexpected elements showing up in the RSS feed
+                // 💥 CLEANUP - STEP 2: Remove any leading Markdown/HTML separators that N2M might be adding
                 contentString = contentString.replace(/^(#+\s*)+/, '').trim(); // Remove leading Markdown headers (e.g. #, ##)
                 contentString = contentString.replace(/^(---|\*\*\*|___)/, '').trim(); // Remove leading HR/separator in MD
                 
                 // 🟢 FIX 3: Explicitly add TWO newlines (\n\n) after the '---'. 
-                // This is the strict requirement for Hugo to correctly parse content after Front Matter.
                 finalMarkdown += `\n\n${contentString}`; 
             } else {
                 console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
