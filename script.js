@@ -53,10 +53,10 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
-            // We use the new, unique date to bust the cache.
+            // We use the new, unique date (13:28:00) to bust the cache.
             const frontMatter = `---
 title: "${pageTitle}"
-date: date: 2025-09-22T13:21:00-05:00
+date: 2025-09-22T13:28:00-05:00 
 draft: false
 ---
 `; 
@@ -68,8 +68,7 @@ draft: false
                 // Aggressively strip all leading/trailing whitespace/newlines from content string
                 contentString = contentString.trim();
 
-                // 🟢 THE ULTIMATE FIX 🟢: Remove any residual newlines/spaces at the start
-                // This stops the XML from showing the Front Matter as page content (h2, hr tags).
+                // 🟢 THE ULTIMATE CLEANUP: Remove any residual newlines/spaces at the start
                 contentString = contentString.replace(/^[\r\n]+/, '');
 
                 // If old messy YAML was still there, this will strip it out:
@@ -84,6 +83,7 @@ draft: false
             }
 
             // Save the Markdown to a new file in the content directory, forcing clean UTF-8 encoding
+            // 🟢 THE CRITICAL FIX FOR YAML CRASH (line 2) 🟢
             const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
