@@ -32,8 +32,8 @@ async function getNotionData() {
     });
 
     for (const page of response.results) {
-        // Extract page title from the properties
-        const pageTitle = page.properties.Name.title[0]?.plain_text || "untitled-page";
+        // Extract page title using the standard page title property (much safer!)
+        const pageTitle = page.properties.title.title[0]?.plain_text || "untitled-page";
         const fileName = pageTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
         
         // Convert blocks to Markdown
