@@ -50,24 +50,36 @@ async function getNotionPages() {
             
             // Get the Markdown blocks for the page's content
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let mdString = n2m.toMarkdownString(mdblocks).parent;
+            let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // 🚨 CRITICAL FIX: Ensure mdString exists before running startsWith()
-            // This prevents crashing on completely empty pages.
-            // Also, removes markdown code fences if the page starts with front matter.
-            if (mdString && mdString.startsWith("```")) {
-                mdString = mdString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
-            }
+            // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
+            // This structure is guaranteed to be read by Hugo as metadata.
+            const frontMatter = `---
+title: "${pageTitle}"
+date: 2025-09-22T12:00:00-05:00
+draft: false
+---
 
-            // 🛑 SAFETY CHECK: Only write the file if content exists!
-            if (mdString) {
-                // Save the Markdown to a new file in the content directory
-                const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
-                fs.writeFileSync(`${contentDir}/${fileName}`, mdString);
-                console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
+`; 
+
+            let finalMarkdown = frontMatter;
+
+            // 🛑 SAFETY CHECK: Only append content if it exists
+            if (contentString) {
+                // If old messy YAML was still there, this will strip it out:
+                if (contentString.startsWith("```")) {
+                    contentString = contentString.replace(/^```(\w*\n)?/, "").replace(/```$/, "");
+                }
+                
+                finalMarkdown += contentString;
             } else {
-                console.log(`⚠️ WARNING: "${pageTitle}" has no readable content. Skipping file creation.`);
+                console.log(`⚠️ WARNING: "${pageTitle}" has no content. Writing front matter only.`);
             }
+
+            // Save the Markdown to a new file in the content directory
+            const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
+            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown);
+            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
         console.log("🥳 All pages converted and saved successfully! The Hugo build step will run next.");
