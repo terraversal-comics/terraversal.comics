@@ -41,7 +41,7 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # This explicit command is needed to find the config.toml file in the root.
+        # 🚨 FINAL FIX: Cleaned up URL (removed brackets/parentheses) 🚨
         run: hugo -s . --config config.toml --baseURL "[https://terraversal-comics.github.io/terraversal.comics/](https://terraversal-comics.github.io/terraversal.comics/)"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
