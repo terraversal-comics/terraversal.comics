@@ -1,66 +1,102 @@
-name: Notion to GitHub Pages
+const { Client } = require("@notionhq/client");
+const { NotionToMarkdown } = require("notion-to-md");
+const fs = require('fs');
 
-on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+// 🚨🚨 1. PASTE YOUR PARENT PAGE ID HERE 🚨🚨
+// This ID is for the main 'Terraversal Comics' page that contains all your blog posts.
+const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1"; 
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+// 2. Set up Notion Clients
+const notion = new Client({ auth: process.env.NOTION_SECRET }); 
+// Initialize N2M with skipFrontMatter: true
+const n2m = new NotionToMarkdown({ 
+    notionClient: notion,
+    skipFrontMatter: true
+});
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+// Helper function for creating clean filenames (slugs)
+function createSlug(title) {
+    return title
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .replace(/[-\s]+/g, "-")
+        .toLowerCase();
+}
 
-      # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: 📝 Install Dependencies and Fetch Notion Data
-        run: |
-          npm install 
-          npm start
-        env:
-          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
+// 3. Define the main function that fetches and converts pages
+async function getNotionPages() {
+    try {
+        console.log("✅ Starting Notion to Markdown conversion from Parent Page...");
 
-      # 2. BUILD STATIC SITE WITH HUGO
-      - name: ⚙️ Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: 'latest'
-          extended: true
-          
-      - name: 🏗️ Build the Website
-        # 💯 CHECK THIS LINE 💯
-        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+        // 🛑 CRITICAL: We list the content (children) of the Parent Page.
+        const blocks = await notion.blocks.children.list({
+            block_id: parentPageId, 
+        });
 
-      # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
-      - name: 📦 Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
+        // We filter the list to only include blocks that are 'child_page' type (your blog posts).
+        const childPages = blocks.results.filter(block => block.type === 'child_page');
+        
+        if (childPages.length === 0) {
+            console.log("❌ No child pages found in the parent page. Check your Notion permissions and page ID.");
+            process.exit(1);
+        }
 
-      - name: ⬆️ Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './public' 
+        // 4. Create and clear content directory
+        const contentDir = "./content";
+        if (!fs.existsSync(contentDir)) {
+            fs.mkdirSync(contentDir);
+            console.log(`✅ Created directory: ${contentDir}`);
+        } else {
+            // Clear out any old files to prevent duplicates
+            fs.readdirSync(contentDir).forEach(file => fs.unlinkSync(`${contentDir}/${file}`));
+            console.log("✅ Cleared existing content directory.");
+        }
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 🚀 Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        console.log(`📝 Found ${childPages.length} child pages. Converting...`);
+
+        // 5. Loop through each child page and convert it
+        for (const page of childPages) {
+            const pageTitle = page.child_page.title || "untitled-page"; 
+            
+            console.log(`Converting "${pageTitle}"...`);
+            
+            // Get the Markdown blocks for the page's content
+            const mdblocks = await n2m.pageToMarkdown(page.id);
+            let contentString = n2m.toMarkdownString(mdblocks).parent;
+
+            // 🚨 FIX: Manually construct the final Markdown file with required Front Matter.
+            // A clean, final template string is the most reliable method.
+            // Note the blank line after the final '---' is crucial for Hugo.
+            const frontMatter = `---
+title: "${pageTitle}"
+date: ${new Date().toISOString()}
+draft: false
+---`;
+
+            // 🟢 ULTIMATE CLEANUP - Strip any leading newlines/whitespace from the content
+            // This is the most common reason for malformed Front Matter.
+            if (contentString) {
+                contentString = contentString.replace(/^[\s\r\n]+/, '');
+            } else {
+                contentString = ''; // Ensure it's not null/undefined
+            }
+
+            // Combine the front matter and the cleaned content with a clean separator.
+            const finalMarkdown = `${frontMatter}\n${contentString}`;
+
+            // Save the Markdown to a new file in the content directory
+            const fileName = `${createSlug(pageTitle)}.md`;
+            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
+            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
+        }
+
+        console.log("🥳 All pages converted and saved successfully! The Hugo build step will run next.");
+
+    } catch (error) {
+        console.error("❌ An error occurred during the conversion process:", error);
+        console.error("Double-check your Notion secret and parent page ID.");
+        process.exit(1);
+    }
+}
+
+getNotionPages();
