@@ -18,21 +18,19 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Get all history for accurate deployment
+          fetch-depth: 0
 
       # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use a stable, recent Node version
+          node-version: '20'
           
       - name: 📝 Install Dependencies and Fetch Notion Data
-        # This step runs your script.js, which is now fixed to fetch pages.
         run: |
           npm install 
           npm start
         env:
-          # This passes your token to the Node script for authentication
           NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
       # 2. BUILD STATIC SITE WITH HUGO
@@ -43,10 +41,8 @@ jobs:
           extended: true
           
       - name: 🏗️ Build the Website
-        # 🚨 FINAL FIX APPLIED HERE 🚨
-        # -s . : Tells Hugo to start looking for config/content from the current directory.
-        # --baseURL: Provides the necessary URL argument.
-        run: hugo -s . --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+        # 🚨 FINAL FIX APPLIED HERE: Direct Config Path 🚨
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
       # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
       - name: 📦 Setup Pages
@@ -56,7 +52,6 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # The output from Hugo goes to the 'public' folder
           path: './public' 
 
   deploy:
