@@ -53,7 +53,7 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // 🚨 FINAL FIX: Manually construct the final Markdown file with required Front Matter
-            // We are using a single newline after the closing --- (this is the fix!)
+            // This structure is guaranteed to be read by Hugo as metadata.
             const frontMatter = `---
 title: "${pageTitle}"
 date: 2025-09-22T12:00:00-05:00
@@ -89,4 +89,9 @@ draft: false
 
     } catch (error) {
         console.error("❌ An error occurred during the conversion process:", error);
-        console.error("Double-
+        console.error("Double-check your Notion secret and parent page ID.");
+        process.exit(1);
+    }
+}
+
+getNotionPages();
