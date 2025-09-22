@@ -1,5 +1,5 @@
 baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
-title = "My Notion Powered Site"
+title = "Terraversal Comics"
 theme = "ananke" 
 sectionPagesMenu = "main"
