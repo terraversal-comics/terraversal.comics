@@ -56,7 +56,7 @@ async function getNotionPages() {
             // We use the new, unique date to bust the cache.
             const frontMatter = `---
 title: "${pageTitle}"
-date: 2025-09-22T13:19:00-05:00 
+date: date: 2025-09-22T13:21:00-05:00
 draft: false
 ---
 `; 
