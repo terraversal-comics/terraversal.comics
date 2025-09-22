@@ -13,7 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
@@ -31,10 +31,10 @@ jobs:
           # Use sed to remove Carriage Return (\r) characters from the script file.
           # This fixes SyntaxError: Unexpected end of input on Linux runners.
           sed -i 's/\r$//' script.js
-          
+
       - name: 📝 Install Dependencies and Fetch Notion Data
         run: |
-          npm install 
+          npm install
           npm start
         env:
           NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
@@ -45,7 +45,7 @@ jobs:
         with:
           hugo-version: 'latest'
           extended: true
-          
+
       - name: 🏗️ Build the Website
         run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
@@ -57,9 +57,9 @@ jobs:
       - name: ⬆️ Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './public' 
+          path: './public'
 
-  deploy:
+  deploy: # ⬅️ FIXED INDENTATION: Aligned with 'build:'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -69,6 +69,3 @@ jobs:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-```eof
-
-This is a totally different type of fix, and since you confirmed the syntax isn't the issue, this has to be it. Update your **YAML file** and let's run it back! 🤞
