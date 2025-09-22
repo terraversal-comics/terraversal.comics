@@ -1,5 +1,18 @@
 baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
 title = "Terraversal Comics"
-theme = "ananke" 
-sectionPagesMenu = "main"
+theme = "your-theme-name" # ⚠️ Make sure to set this to whatever theme you are using!
+disableKinds = ["taxonomy", "term"] # Usually a good idea to disable these unless needed
+
+[params]
+  description = "Recent content on Terraversal Comics" # Used in the RSS feed description
+
+[outputs]
+  home = ["HTML", "RSS"]
+  page = ["HTML"]
+
+# 💥 The actual fix to stop the YAML block showing in the RSS feed:
+[params.rss]
+  limit = 20 # Show up to 20 items in the feed
+  # Use this to force plain text or a summary instead of full HTML content
+  include_full_content = false
