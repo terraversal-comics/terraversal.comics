@@ -2,56 +2,69 @@ const { Client } = require("@notionhq/client");
 const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
-// 🚨 1. PASTE YOUR DATABASE ID HERE 🚨
+// 🚨🚨 1. PASTE YOUR DATABASE ID HERE 🚨🚨
 // This is the long string before the '?' in your database URL.
-const databaseId = "27458bf5c3a480e796b4ca0f2c209df1"; 
+// Example: "a287c2b3e8114c0a8f89e1d1b9d4a41d"
+const databaseId = "PASTE_YOUR_DATABASE_ID_HERE"; 
 
 // 2. Set up Notion Clients
-const notion = new Client({ auth: process.env.NOTION_SECRET }); // Make sure it's process.env.NOTION_SECRET
+const notion = new Client({ auth: process.env.NOTION_SECRET }); 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
-// 3. This is our debug script.
-async function getNotionDebugData() {
-    console.log("🔥 Starting DEBUG script...");
-    console.log("🔥 Checking Notion token...");
-
+// 3. Define the main function that fetches and converts pages
+async function getNotionPages() {
     try {
-        // This is a simple query to test if the token is valid.
-        const tokenTest = await notion.users.list({});
-        console.log("✅ Token is working! It returned user data.");
-        console.log("🔥 Now querying database...");
-        
-        // This query fetches the first few pages of your database
-        const response = await notion.databases.query({
+        console.log("✅ Starting Notion to Markdown conversion...");
+
+        // Query the database to get all pages
+        const pages = await notion.databases.query({
             database_id: databaseId,
-            page_size: 5, // We don't need all of them, just enough to debug
+            // 🚨 We are not using a filter so we don't crash 🚨
         });
 
-        if (response.results.length === 0) {
-            console.log("❌ No pages found in this database. Double-check your database ID.");
-        } else {
-            console.log("✅ Database query succeeded. Printing the properties of the first page:");
-            
-            // Print out the properties of the very first page it finds
-            const firstPage = response.results[0];
-            const propertyKeys = Object.keys(firstPage.properties);
-            console.log("🔥 Found these properties (columns) in your database:");
-            console.log(propertyKeys);
-            console.log("🔥 Full JSON of the first page's properties:");
-            console.log(JSON.stringify(firstPage.properties, null, 2));
-
-            console.log("✅ DEBUG SCRIPT COMPLETE. Look for the property names above and tell me what they are.");
-            // We force a crash here because this script is for debugging only.
-            // A successful run would have an exit code of 0, but since we need to wait
-            // for your input, we force it to fail.
+        if (pages.results.length === 0) {
+            console.log("❌ No pages found in the database. Double-check your database ID.");
             process.exit(1);
         }
 
+        // 4. Create a content directory if it doesn't exist
+        const contentDir = "./content";
+        if (!fs.existsSync(contentDir)) {
+            fs.mkdirSync(contentDir);
+            console.log(`✅ Created directory: ${contentDir}`);
+        } else {
+            // Clear out any old files to prevent duplicates
+            fs.readdirSync(contentDir).forEach(file => fs.unlinkSync(`${contentDir}/${file}`));
+            console.log("✅ Cleared existing content directory.");
+        }
+
+        console.log(`📝 Found ${pages.results.length} pages. Converting...`);
+
+        // 5. Loop through each page and convert it
+        for (const page of pages.results) {
+            // Use the generic `title` property, which is always present
+            const pageTitle = page.properties.title.title[0]?.plain_text || "untitled-page"; 
+            
+            console.log(`Converting "${pageTitle}"...`);
+            
+            // Get the Markdown blocks for the page's content
+            const mdblocks = await n2m.pageToMarkdown(page.id);
+            const mdString = n2m.toMarkdownString(mdblocks).parent;
+
+            // Save the Markdown to a new file in the content directory
+            const fileName = `${pageTitle.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()}.md`;
+            fs.writeFileSync(`${contentDir}/${fileName}`, mdString);
+
+            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
+        }
+
+        console.log("🥳 All pages converted and saved successfully! The workflow should now continue.");
+
     } catch (error) {
-        console.error("❌ A Notion API error occurred! This most likely means your secret token is wrong or the database ID is incorrect.");
-        console.error("❌ The specific error is:", error);
+        console.error("❌ An error occurred during the conversion process:", error);
+        console.error("Double-check your Notion secret and database ID.");
         process.exit(1);
     }
 }
 
-getNotionDebugData();
+getNotionPages();
