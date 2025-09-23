@@ -47,10 +47,11 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // Remove code fences and the content within them
-            let cleanedContent = contentString.replace(/```[\s\S]*?```/, '').trim();
+            // 🛑 This is the content we will use for the final markdown file!
+            let cleanedContent = contentString.replace(/```[\s\S]*?```/g, '').trim();
             // Remove a second set of front matter if it exists
             cleanedContent = cleanedContent.replace(/^---\s*[\s\S]*?---/, '').trim();
-            
+            
             let summaryString = '';
             if (cleanedContent) {
                 const firstPeriod = cleanedContent.indexOf('.');
@@ -69,8 +70,9 @@ description: ${JSON.stringify(summaryString)}
 ---
 `;
             
-            if (contentString) {
-                finalMarkdown += `\n${contentString}`;
+            if (cleanedContent) {
+                // 🟢 We use the CLEANED content here and a double newline!
+                finalMarkdown += `\n\n${cleanedContent}`;
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
