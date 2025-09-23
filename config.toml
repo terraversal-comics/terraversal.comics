@@ -1,20 +1,5 @@
-baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
+baseURL = "/"
 languageCode = "en-us"
 title = "Terraversal Comics"
 theme = "ananke"
 disableKinds = ["taxonomy", "term"]
-
-# 💥 THE CRITICAL FIX: Set the global RSS content limit to 0. 
-# This is the standard way to fix the ghost YAML in the RSS feed 
-# and ensures Hugo's core output is predictable.
-rssLimit = 0
-
-[params]
-  description = "Recent content on Terraversal Comics"
-
-[outputs]
-  home = ["HTML", "RSS"]
-  page = ["HTML"]
-
-# ⚠️ REMOVED all the complex [mediaTypes] and [outputFormats.RSS] sections!
-# This is a cache-busting comment
