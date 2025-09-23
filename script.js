@@ -46,9 +46,11 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // Remove any existing frontmatter from the content, including code fences
-            let cleanedContent = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
-
+            // Remove code fences and the content within them
+            let cleanedContent = contentString.replace(/```[\s\S]*?```/, '').trim();
+            // Remove a second set of front matter if it exists
+            cleanedContent = cleanedContent.replace(/^---\s*[\s\S]*?---/, '').trim();
+            
             let summaryString = '';
             if (cleanedContent) {
                 const firstPeriod = cleanedContent.indexOf('.');
