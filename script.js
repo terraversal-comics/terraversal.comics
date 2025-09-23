@@ -72,4 +72,15 @@ description: ${JSON.stringify(summaryString)}
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown,
+            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
+        }
+
+        console.log("🥳 All pages converted and saved successfully!");
+
+    } catch (error) {
+        console.error("❌ An error occurred during the conversion process:", error);
+        process.exit(1);
+    }
+}
+
+getNotionPages();
