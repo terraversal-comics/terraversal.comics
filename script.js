@@ -3,7 +3,7 @@ const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
 const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
-const notionSecret = process.env.NOTION_SECRET;
+const notionSecret = process.env.env.NOTION_SECRET;
 
 if (!notionSecret) {
   console.error("❌ NOTION_SECRET environment variable is not set.");
@@ -45,9 +45,11 @@ async function getNotionPages() {
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
-
-            // Remove any existing frontmatter from the content, including code fences
-            let cleanedContent = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
+            
+            // Remove any existing frontmatter from the content. This regex is more general and will catch the YAML.
+            let cleanedContent = contentString.replace(/^---\s*[\s\S]*?\s*---/, '').trim();
+            // Also remove any code blocks that might be present
+            cleanedContent = cleanedContent.replace(/```[\s\S]*?```/, '').trim();
 
             let summaryString = '';
             if (cleanedContent) {
@@ -67,12 +69,13 @@ description: ${JSON.stringify(summaryString)}
 ---
 `;
             
-            if (contentString) {
-                finalMarkdown += `\n${contentString}`;
+            if (cleanedContent) {
+                finalMarkdown += `\n${cleanedContent}`;
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
+            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
         console.log("🥳 All pages converted and saved successfully!");
