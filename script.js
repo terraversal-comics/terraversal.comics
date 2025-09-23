@@ -44,7 +44,7 @@ async function getNotionPages() {
             const pageTitle = page.child_page.title || "untitled-page";
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let contentString = n2m.toMarkdownString(mdblocks).body.join('\n');
+            let contentString = (n2m.toMarkdownString(mdblocks).body || []).join('\n');
 
             let summaryString = '';
             if (contentString) {
