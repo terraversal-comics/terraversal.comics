@@ -44,20 +44,15 @@ async function getNotionPages() {
             const pageTitle = page.child_page.title || "untitled-page";
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let contentString = n2m.toMarkdownString(mdblocks).parent;
-            
-            // Remove any existing frontmatter from the content. This regex is more general and will catch the YAML.
-            let cleanedContent = contentString.replace(/^---\s*[\s\S]*?\s*---/, '').trim();
-            // Also remove any code blocks that might be present
-            cleanedContent = cleanedContent.replace(/```[\s\S]*?```/, '').trim();
+            let contentString = n2m.toMarkdownString(mdblocks).body; // Use .body for clean content
 
             let summaryString = '';
-            if (cleanedContent) {
-                const firstPeriod = cleanedContent.indexOf('.');
+            if (contentString) {
+                const firstPeriod = contentString.indexOf('.');
                 if (firstPeriod !== -1 && firstPeriod < 250) {
-                    summaryString = cleanedContent.substring(0, firstPeriod + 1).trim();
+                    summaryString = contentString.substring(0, firstPeriod + 1).trim();
                 } else {
-                    summaryString = cleanedContent.substring(0, 250).trim() + '...';
+                    summaryString = contentString.substring(0, 250).trim() + '...';
                 }
             }
 
@@ -69,12 +64,13 @@ description: ${JSON.stringify(summaryString)}
 ---
 `;
             
-            if (cleanedContent) {
-                finalMarkdown += `\n${cleanedContent}`;
+            if (contentString) {
+                finalMarkdown += `\n${contentString}`;
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
+            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
         console.log("🥳 All pages converted and saved successfully!");
