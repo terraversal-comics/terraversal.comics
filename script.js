@@ -3,7 +3,7 @@ const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
 // 🚨 FINAL FIX: The Parent Page ID and Notion Secret are handled here
-const parentPageId = "27458bf5c3a480e796b4ca0c2c209df1";
+const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 const notionSecret = process.env.NOTION_SECRET;
 
 // Check to make sure the Notion Secret is actually present
