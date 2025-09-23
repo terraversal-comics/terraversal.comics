@@ -3,7 +3,7 @@ const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
 const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
-const notionSecret = process.env.env.NOTION_SECRET;
+const notionSecret = process.env.NOTION_SECRET;
 
 if (!notionSecret) {
   console.error("❌ NOTION_SECRET environment variable is not set.");
@@ -75,7 +75,6 @@ description: ${JSON.stringify(summaryString)}
 
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
-            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
         console.log("🥳 All pages converted and saved successfully!");
