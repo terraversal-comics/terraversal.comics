@@ -44,7 +44,7 @@ async function getNotionPages() {
             const pageTitle = page.child_page.title || "untitled-page";
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let contentString = n2m.toMarkdownString(mdblocks).body; // Use .body for clean content
+            let contentString = n2m.toMarkdownString(mdblocks).body.join('\n');
 
             let summaryString = '';
             if (contentString) {
@@ -70,7 +70,6 @@ description: ${JSON.stringify(summaryString)}
 
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
-            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
         }
 
         console.log("🥳 All pages converted and saved successfully!");
