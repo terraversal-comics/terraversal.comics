@@ -46,7 +46,6 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
             
-            // Clean up the content string and create the summary
             contentString = contentString.replace(/^---\s*[\s\S]*?\s*---\s*/, '').trim();
             let summaryString = '';
             
@@ -84,4 +83,4 @@ description: ${JSON.stringify(summaryString)}
     }
 }
 
-getPageInfo();
+getNotionPages();
