@@ -4,7 +4,7 @@ const fs = require('fs');
 
 // 🚨🚨 1. PASTE YOUR PARENT PAGE ID HERE 🚨🚨
 // This ID is for the main 'Terraversal Comics' page that contains all your blog posts.
-const parentPageId = "27458bf5c3a480e796b4ca0c2c209df1";
+const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 
 // 2. Set up Notion Clients
 const notion = new Client({ auth: process.env.NOTION_SECRET });
