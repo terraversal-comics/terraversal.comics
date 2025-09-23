@@ -6,8 +6,8 @@ const parentPageId = "27458bf5c3a480e796b4ca0f2c209df1";
 const notionSecret = process.env.NOTION_SECRET;
 
 if (!notionSecret) {
-  console.error("❌ NOTION_SECRET environment variable is not set.");
-  process.exit(1);
+    console.error("❌ NOTION_SECRET environment variable is not set.");
+    process.exit(1);
 }
 
 const notion = new Client({ auth: notionSecret });
@@ -43,12 +43,16 @@ async function getNotionPages() {
         for (const page of childPages) {
             const pageTitle = page.child_page.title || "untitled-page";
             console.log(`Converting "${pageTitle}"...`);
+
+            // This line was the main issue. It's an array of markdown blocks, not a single string.
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let contentString = n2m.toMarkdownString(mdblocks).parent;
-            
+            const mdString = n2m.toMarkdownString(mdblocks);
+            let contentString = mdString.parent;
+
+            // This line now correctly removes the unwanted frontmatter that was in the Notion page itself.
             contentString = contentString.replace(/^---\s*[\s\S]*?\s*---\s*/, '').trim();
-            let summaryString = '';
             
+            let summaryString = '';
             if (contentString) {
                 const firstPeriod = contentString.indexOf('.');
                 if (firstPeriod !== -1 && firstPeriod < 250) {
@@ -58,18 +62,15 @@ async function getNotionPages() {
                 }
             }
 
-            let finalMarkdown = `---
+            // Remove the JSON.stringify and just use summaryString directly.
+            const finalMarkdown = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
-description: ${JSON.stringify(summaryString)}
+description: "${summaryString.replace(/"/g, '\\"')}"
 ---
-`;
+${contentString}\n`;
             
-            if (contentString) {
-                finalMarkdown += `\n${contentString}`;
-            }
-
             const fileName = `${createSlug(pageTitle)}.md`;
             fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
             console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
