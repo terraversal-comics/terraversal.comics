@@ -44,15 +44,18 @@ async function getNotionPages() {
             const pageTitle = page.child_page.title || "untitled-page";
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
-            let contentString = (n2m.toMarkdownString(mdblocks).body || []).join('\n');
+            let contentString = n2m.toMarkdownString(mdblocks).parent;
+
+            // Remove any existing frontmatter from the content, including code fences
+            let cleanedContent = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
 
             let summaryString = '';
-            if (contentString) {
-                const firstPeriod = contentString.indexOf('.');
+            if (cleanedContent) {
+                const firstPeriod = cleanedContent.indexOf('.');
                 if (firstPeriod !== -1 && firstPeriod < 250) {
-                    summaryString = contentString.substring(0, firstPeriod + 1).trim();
+                    summaryString = cleanedContent.substring(0, firstPeriod + 1).trim();
                 } else {
-                    summaryString = contentString.substring(0, 250).trim() + '...';
+                    summaryString = cleanedContent.substring(0, 250).trim() + '...';
                 }
             }
 
