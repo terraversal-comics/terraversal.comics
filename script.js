@@ -2,7 +2,7 @@ const { Client } = require("@notionhq/client");
 const { NotionToMarkdown } = require("notion-to-md");
 const fs = require('fs');
 
-const parentPageId = "27458bf5c3a480e796b4ca0c2c209df1"; // ✅ Confirmed this ID works
+const parentPageId = '27458bf5c3a480e796b4ca0c2c209df1'; // ✅ Confirmed this ID works
 
 const notion = new Client({ auth: process.env.NOTION_SECRET });
 const n2m = new NotionToMarkdown({
