@@ -1,7 +1,7 @@
 baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
 title = "Terraversal Comics"
-theme = "ananke" 
+theme = "ananke"
 disableKinds = ["taxonomy", "term"]
 
 # 💥 THE CRITICAL FIX: Set the global RSS content limit to 0. 
