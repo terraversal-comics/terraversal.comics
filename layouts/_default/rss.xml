@@ -19,7 +19,7 @@
       {{ with .Site.Author.email }}
       <author>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</author>{{end}}
       {{ with .Description }}
-      <description>{{ . | plainify | htmlUnescape | replaceRE `^---\s*[\s\S]*?\s*---\s*` "" | chomp }}</description>
+      <description>{{ . | plainify | htmlUnescape | replaceRE "```yaml\\s*---[\\s\\S]*?---\\s*```" "" | chomp }}</description>
       {{ end }}
     </item>
     {{ end }}
