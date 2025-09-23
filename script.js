@@ -45,37 +45,30 @@ async function getNotionPages() {
             console.log(`Converting "${pageTitle}"...`);
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
-
-            // 🚨 FINAL FIX 🚨
-            // Here, we manually create a clean summary and the full content string.
+            
+            // Clean up the content string and create the summary
+            contentString = contentString.replace(/^---\s*[\s\S]*?\s*---\s*/, '').trim();
             let summaryString = '';
-            let finalContent = '';
             
             if (contentString) {
-                // Find the first sentence or a reasonable summary length.
                 const firstPeriod = contentString.indexOf('.');
                 if (firstPeriod !== -1 && firstPeriod < 250) {
                     summaryString = contentString.substring(0, firstPeriod + 1).trim();
                 } else {
                     summaryString = contentString.substring(0, 250).trim() + '...';
                 }
-                
-                // Remove the summary text from the main content string to avoid duplication.
-                finalContent = contentString.replace(summaryString, '').trim();
             }
 
             let finalMarkdown = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
-description: "${summaryString}"
+description: ${JSON.stringify(summaryString)}
 ---
 `;
             
-            if (finalContent) {
-                finalMarkdown += `\n${finalContent}`;
-            } else if (summaryString) {
-                finalMarkdown += `\n${summaryString}`;
+            if (contentString) {
+                finalMarkdown += `\n${contentString}`;
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
@@ -91,4 +84,4 @@ description: "${summaryString}"
     }
 }
 
-getNotionPages();
+getPageInfo();
