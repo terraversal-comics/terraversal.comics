@@ -47,18 +47,35 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // 🚨 FINAL FIX 🚨
-            // Use a regex to ruthlessly strip out any ghost YAML from the content string
-            contentString = contentString.replace(/^---\s*[\s\S]*?\s*---\s*/, '').trim();
+            // Here, we manually create a clean summary and the full content string.
+            let summaryString = '';
+            let finalContent = '';
+            
+            if (contentString) {
+                // Find the first sentence or a reasonable summary length.
+                const firstPeriod = contentString.indexOf('.');
+                if (firstPeriod !== -1 && firstPeriod < 250) {
+                    summaryString = contentString.substring(0, firstPeriod + 1).trim();
+                } else {
+                    summaryString = contentString.substring(0, 250).trim() + '...';
+                }
+                
+                // Remove the summary text from the main content string to avoid duplication.
+                finalContent = contentString.replace(summaryString, '').trim();
+            }
 
             let finalMarkdown = `---
 title: "${pageTitle}"
 date: ${new Date().toISOString()}
 draft: false
+description: "${summaryString}"
 ---
 `;
             
-            if (contentString) {
-                finalMarkdown += `\n\n\n${contentString}`;
+            if (finalContent) {
+                finalMarkdown += `\n${finalContent}`;
+            } else if (summaryString) {
+                finalMarkdown += `\n${summaryString}`;
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
