@@ -46,16 +46,8 @@ async function getNotionPages() {
             const mdblocks = await n2m.pageToMarkdown(page.id);
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
-            // Remove any existing frontmatter from the content
-            const hasFrontMatter = contentString.startsWith('---');
-            if (hasFrontMatter) {
-                const parts = contentString.split('---');
-                if (parts.length > 2) {
-                    contentString = parts.slice(2).join('---').trim();
-                } else {
-                    contentString = contentString.replace(/^---[\s\S]*?---/, '').trim();
-                }
-            }
+            // Remove any existing frontmatter from the content, including code fences
+            contentString = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
 
             let summaryString = '';
             if (contentString) {
