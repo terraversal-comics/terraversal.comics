@@ -47,15 +47,15 @@ async function getNotionPages() {
             let contentString = n2m.toMarkdownString(mdblocks).parent;
 
             // Remove any existing frontmatter from the content, including code fences
-            contentString = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
+            let cleanedContent = contentString.replace(/```yaml\s*---[\s\S]*?---\s*```/, '').trim();
 
             let summaryString = '';
-            if (contentString) {
-                const firstPeriod = contentString.indexOf('.');
+            if (cleanedContent) {
+                const firstPeriod = cleanedContent.indexOf('.');
                 if (firstPeriod !== -1 && firstPeriod < 250) {
-                    summaryString = contentString.substring(0, firstPeriod + 1).trim();
+                    summaryString = cleanedContent.substring(0, firstPeriod + 1).trim();
                 } else {
-                    summaryString = contentString.substring(0, 250).trim() + '...';
+                    summaryString = cleanedContent.substring(0, 250).trim() + '...';
                 }
             }
 
@@ -72,16 +72,4 @@ description: ${JSON.stringify(summaryString)}
             }
 
             const fileName = `${createSlug(pageTitle)}.md`;
-            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown, { encoding: 'utf8' });
-            console.log(`✅ Saved "${pageTitle}" to ${fileName}`);
-        }
-
-        console.log("🥳 All pages converted and saved successfully!");
-
-    } catch (error) {
-        console.error("❌ An error occurred during the conversion process:", error);
-        process.exit(1);
-    }
-}
-
-getNotionPages();
+            fs.writeFileSync(`${contentDir}/${fileName}`, finalMarkdown,
