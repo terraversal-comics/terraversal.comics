@@ -1,5 +1,10 @@
-baseURL = "/"
+baseURL = "https://terraversal-comics.github.io/terraversal.comics/"
 languageCode = "en-us"
 title = "Terraversal Comics"
 theme = "ananke"
-disableKinds = ["taxonomy", "term"]
+
+[params]
+  description = "Recent content on Terraversal Comics"
+
+[outputs]
+  home = ["HTML", "RSS"]
