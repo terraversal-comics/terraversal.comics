@@ -1,71 +1,70 @@
 name: Notion to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: 💾 Install dos2unix
+        run: sudo apt-get update && sudo apt-get install -y dos2unix
 
-      - name: 💾 Install dos2unix
-        run: sudo apt-get update && sudo apt-get install -y dos2unix
+      - name: 🧹 Fix Line Endings on script.js
+        run: dos2unix script.js
 
-      - name: 🧹 Fix Line Endings on script.js
-        run: dos2unix script.js
+      - name: 📝 Install Dependencies and Fetch Notion Data
+        run: |
+          npm install
+          npm start
+        env:
+          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
-      - name: 📝 Install Dependencies and Fetch Notion Data
-        run: |
-          npm install
-          npm start
-        env:
-          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
+      # 2. BUILD STATIC SITE WITH HUGO
+      - name: ⚙️ Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
 
-      # 2. BUILD STATIC SITE WITH HUGO
-      - name: ⚙️ Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: 'latest'
-          extended: true
+      - name: 🏗️ Build the Website
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
-      - name: 🏗️ Build the Website
-        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+      # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
+      - name: 📦 Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
 
-      # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
-      - name: 📦 Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
+      - name: ⬆️ Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
 
-      - name: ⬆️ Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './site' # <--- 🚨 FINAL FIX HERE 🚨
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 🚀 Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
