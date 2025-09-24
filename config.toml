@@ -8,3 +8,5 @@ theme = "ananke"
 
 [outputs]
   home = ["HTML", "RSS"]
+
+publishDir = "site"
