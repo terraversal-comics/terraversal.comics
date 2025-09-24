@@ -1,70 +1,68 @@
 name: Notion to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  build:
+    runs-on: ubuntu-latest
 
-      # 1. SETUP NODE.JS & RUN CUSTOM NOTION SCRIPT
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 💾 Install dos2unix
-        run: sudo apt-get update && sudo apt-get install -y dos2unix
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: 🧹 Fix Line Endings on script.js
-        run: dos2unix script.js
+      - name: 💾 Install dos2unix
+        run: sudo apt-get update && sudo apt-get install -y dos2unix
 
-      - name: 📝 Install Dependencies and Fetch Notion Data
-        run: |
-          npm install
-          npm start
-        env:
-          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
+      - name: 🧹 Fix Line Endings on script.js
+        run: dos2unix script.js
 
-      # 2. BUILD STATIC SITE WITH HUGO
-      - name: ⚙️ Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: 'latest'
-          extended: true
+      - name: 📝 Install Dependencies and Fetch Notion Data
+        run: |
+          npm install
+          npm start
+        env:
+          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
 
-      - name: 🏗️ Build the Website
-        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
+      - name: ⚙️ Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
 
-      # 3. UPLOAD ARTIFACT FOR DEPLOYMENT
-      - name: 📦 Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
+      - name: 🏗️ Build the Website
+        run: hugo -s . --config config.toml --baseURL "https://terraversal-comics.github.io/terraversal.comics/"
 
-      - name: ⬆️ Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './site'
+      - name: 📦 Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 🚀 Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: ⬆️ Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public' # <--- Reverted to the correct path here
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
